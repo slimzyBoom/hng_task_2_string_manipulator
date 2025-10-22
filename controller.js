@@ -32,7 +32,7 @@ const create_string = (req, res) => {
         unique_characters: count_unique_strings(string_value),
         word_count: compute_number_of_words(string_value),
         sha2656_hash: hashedString,
-        character_frequency_map: compute_string_occurance(string_value),
+        character_frequency_map: compute_string_occurrence(string_value),
       },
       created_at: new Date().toUTCString(),
     };
