@@ -2,7 +2,7 @@ import { query_prompts } from "./query_prompts.js";
 import {
   hash_string,
   compute_string_occurance,
-  count_unique_strings,
+  count_unique_characters,
   compute_number_of_words,
   char_in_string,
   is_string_palindrome,
@@ -11,11 +11,11 @@ import {
 
 const stringDB = [];
 
-/* -------------------- CREATE STRING -------------------- */
+
 const create_string = (req, res) => {
   const { value } = req.body;
 
-  if (value === undefined) {
+  if (value === undefined || value === null) {
     return res.status(422).json({ message: "'value' field is required" });
   }
 
@@ -27,7 +27,6 @@ const create_string = (req, res) => {
     return res.status(422).json({ message: "String cannot be empty" });
   }
 
-  // Check duplicates
   const existing = stringDB.find((s) => s.value === value);
   if (existing) {
     return res.status(409).json({ message: "String already exists" });
@@ -35,15 +34,16 @@ const create_string = (req, res) => {
 
   try {
     const hashedString = hash_string(value);
+
     const stringStats = {
       id: hashedString,
       value,
       properties: {
         length: count_string_characters(value),
         is_string_palindrome: is_string_palindrome(value),
-        unique_characters: count_unique_strings(value),
+        unique_characters: count_unique_characters(value),
         word_count: compute_number_of_words(value),
-        sha256_hash: hashedString,
+        sha256_hash: hashedString, 
         character_frequency_map: compute_string_occurance(value),
       },
       created_at: new Date().toISOString(),
@@ -57,7 +57,6 @@ const create_string = (req, res) => {
   }
 };
 
-/* -------------------- GET STRING BY VALUE -------------------- */
 const get_string_by_value = (req, res) => {
   const { string_value } = req.params;
 
@@ -73,7 +72,7 @@ const get_string_by_value = (req, res) => {
   return res.status(200).json(found);
 };
 
-/* -------------------- GET ALL STRINGS -------------------- */
+
 const get_all_strings = (req, res) => {
   const {
     is_palindrome,
@@ -83,14 +82,13 @@ const get_all_strings = (req, res) => {
     contains_character,
   } = req.query;
 
-  // Convert types
+
   const isPalindrome = is_palindrome === "true";
-  const minLength = min_length ? parseInt(min_length) : null;
-  const maxLength = max_length ? parseInt(max_length) : null;
-  const wordCount = word_count ? parseInt(word_count) : null;
+  const minLength = min_length ? parseInt(min_length, 10) : null;
+  const maxLength = max_length ? parseInt(max_length, 10) : null;
+  const wordCount = word_count ? parseInt(word_count, 10) : null;
   const containsChar = contains_character || null;
 
-  // If no filters, return all
   if (
     !is_palindrome &&
     !min_length &&
@@ -98,7 +96,7 @@ const get_all_strings = (req, res) => {
     !word_count &&
     !contains_character
   ) {
-    return res.json({
+    return res.status(200).json({
       data: stringDB,
       count: stringDB.length,
       message: "All strings returned (no filters applied)",
@@ -127,7 +125,6 @@ const get_all_strings = (req, res) => {
   });
 };
 
-/* -------------------- NATURAL LANGUAGE FILTER -------------------- */
 const filter_by_natural_language = (req, res) => {
   const { query_prompt } = req.query;
   const normalized_query = query_prompt?.toLowerCase().trim();
@@ -156,7 +153,7 @@ const filter_by_natural_language = (req, res) => {
   }
 };
 
-/* -------------------- DELETE STRING -------------------- */
+
 const delete_string = (req, res) => {
   const { string_value } = req.params;
 
