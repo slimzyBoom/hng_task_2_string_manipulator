@@ -13,6 +13,9 @@ const stringDB = [];
 
 const create_string = (req, res) => {
   const { string_value } = req.body;
+  if(typeof string_value !== "string") {
+    return res.status(422).json({ message: "String value must be a string" });
+  }
   if (!string_value && string_value === "") {
     return res.status(400).json({ message: "String value is required" });
   }
@@ -118,8 +121,8 @@ const get_all_strings = (req, res) => {
 };
 
 const filter_by_natural_language = (req, res) => {
-  const { query_prompt } = req.query;
-  const normalized_query = query_prompt?.toLowerCase().trim();
+  const { query } = req.query;
+  const normalized_query = query?.toLowerCase().trim();
   if (!normalized_query || !query_prompts[normalized_query]) {
     return res
       .status(400)
@@ -127,14 +130,14 @@ const filter_by_natural_language = (req, res) => {
   }
   try {
     // Get the filter function based on the query prompt
-    const filter_function = query_prompts[query_prompt];
+    const filter_function = query_prompts[query];
     const { responseObj, parsed_filters } = filter_function(stringDB);
 
     res.json({
       data: responseObj,
       count: responseObj.length,
       interpreted_query: {
-        original: query_prompt,
+        original: query,
         parsed_filters,
       },
     });
