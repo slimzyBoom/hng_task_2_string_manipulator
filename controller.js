@@ -1,7 +1,7 @@
 import { query_prompts } from "./query_prompts.js";
 import {
   hash_string,
-  compute_string_occurance,
+  compute_string_occurrence,
   count_unique_strings,
   compute_number_of_words,
   char_in_string,
