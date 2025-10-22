@@ -10,11 +10,7 @@ app.use(express.json());
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 app.use(cors());
 
-app.get("/", (req, res) => {
-  res.send("Hello, World!");
-});
-
-app.use("/api/v1", router);
+app.use("/", router);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
